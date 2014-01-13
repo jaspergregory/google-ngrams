@@ -29,6 +29,7 @@ def getNgrams(query, corpus, startYear, endYear, smoothing, caseInsensitive):
     data = {qry['ngram']: qry['timeseries'] for qry in literal_eval(res[0])}
     df = DataFrame(data)
     df.insert(0, 'year', range(startYear, endYear+1))
+    df.index=df['year']
     return req.url, params['content'], df
 
 
@@ -90,10 +91,16 @@ def runQuery(argumentString):
         if not allData:
             if caseInsensitive is True:
                 for col in df.columns:
-                    if col.count('(All)') == 0 and col != 'year':
-                        df.pop(col)
-                    elif col.count('(All)') == 1:
+                    if col.count('(All)') == 1:
                         df[col.replace(' (All)', '')] = df.pop(col)
+                    elif col.count(':chi_') == 1 or corpus.startswith('chi_'):
+                        pass
+                    elif col.count(':ger_') == 1 or corpus.startswith('ger_'):
+                        pass
+                    elif col.count(':heb_') == 1 or corpus.startswith('heb_'):
+                        pass
+                    elif col.count('(All)') == 0 and col != 'year':
+                        df.pop(col)
             if '_INF' in query:
                 for col in df.columns:
                     if '_INF' in col:
@@ -137,6 +144,7 @@ def runQuery(argumentString):
                     print 'Plotting Failed: %s' % filename
         if notifyUser:
             print warningMessage
+    return df
 
 if __name__ == '__main__':
     argumentString = ' '.join(sys.argv[1:])
